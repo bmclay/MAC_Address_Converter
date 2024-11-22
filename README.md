@@ -45,6 +45,7 @@ WantedBy=default.target
 ```
 
 Replace `/path/to/mac_address_converter.py` with the full path to your script.
+
 Replace `/wherever/you/want/to/keep/the/logs` with the full path to the desired log location.
 
 #### Enable the Service:
