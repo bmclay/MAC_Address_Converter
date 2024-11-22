@@ -30,21 +30,22 @@ Description=MAC Address Formatter Script
 After=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/bmclay/scripts/mac_address_converter/mac_address_converter.py --debug
+ExecStart=/usr/bin/python3 /path/to/mac_address_converter.py --debug
 Restart=always
 # Use Wayland-specific environment variables
 Environment="WAYLAND_DISPLAY=wayland-0"
 # Set XDG_RUNTIME_DIR, as Wayland requires it for session information
 Environment="XDG_RUNTIME_DIR=/run/user/%U"
 # Redirect output for debugging
-StandardOutput=append:/home/bmclay/scripts/logs/mac_address_converter_output.log
-StandardError=append:/home/bmclay/scripts/logs/mac_address_converter_error.log
+StandardOutput=append:/wherever/you/want/to/keep/the/logs_output.log
+StandardError=append:/wherever/you/want/to/keep/the/logs_error.log
 
 [Install]
 WantedBy=default.target
 ```
 
 Replace `/path/to/mac_address_converter.py` with the full path to your script.
+Replace `/wherever/you/want/to/keep/the/logs` with the full path to the desired log location.
 
 #### Enable the Service:
 
