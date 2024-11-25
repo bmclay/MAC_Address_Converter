@@ -126,16 +126,16 @@ macOS automatically stops launch agents when you log out.
 
 Log out and back in to ensure the script starts automatically.
 
-### To manually stop the script:
+## To manually stop the script:
 
-#### Linux
+### Linux
 
 `systemctl --user stop mac_address_converter.service`
 
-#### Windows
+### Windows
 
 Open Task Manager, find the script under "Background processes," and end it.
 
-#### macOS
+### macOS
 
 `launchctl unload`.
