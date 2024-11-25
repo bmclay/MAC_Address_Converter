@@ -51,7 +51,6 @@ def on_button_click(format_style):
     """
     mac_address = mac_entry.get()
     formatted_mac = format_mac_address(mac_address, format_style)
-    # formatted_mac_label.config(text=f"Formatted MAC: {formatted_mac}")
     pyperclip.copy(formatted_mac)  # Copy formatted MAC to clipboard
 
 def clipboard_listener():
@@ -72,7 +71,10 @@ def clipboard_listener():
 # Create the main application window
 window = tk.Tk()
 window.title("MAC Address Converter")
-window.geometry("600x200")
+window.resizable(False, False)
+window_width = 600
+window_height = 150
+window.geometry(f"{window_width}x{window_height}")
 
 # Create input box for MAC address
 mac_entry_label = tk.Label(window, text="Detected MAC address:")
@@ -96,10 +98,6 @@ no_delimiters_button.grid(row=0, column=2, padx=5)
 
 dot_separated_button = tk.Button(button_frame, text="XXXX.XXXX.XXXX", command=lambda: on_button_click("dot_separated"))
 dot_separated_button.grid(row=0, column=3, padx=5)
-
-# Label to show the formatted MAC
-# formatted_mac_label = tk.Label(window, text="Formatted MAC will appear here.")
-# formatted_mac_label.pack(pady=10)
 
 # Function to handle the close event
 def on_close():
