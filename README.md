@@ -1,6 +1,6 @@
 # MAC ADDRESS CONVERTER
 
-Convert MAC Addresses to different conventions on the fly as they are copied to the clipbboard.
+Convert MAC Addresses to different conventions on the fly as they are copied to the clipboard.
 
 This script will listen for a MAC address to be copied. Once it detects that a MAC address is copied, a window will appear automatically allowing you to change the format of the copied MAC address.
 
