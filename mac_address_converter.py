@@ -2,7 +2,10 @@ import tkinter as tk
 import re
 import pyperclip
 import time
+from enum import Enum
 import threading
+
+Color = Enum('Case', [('UPPER', 1), ('LOWER', 2)])
 
 def format_mac_address(mac, format_style="colons"):
     """
@@ -53,6 +56,18 @@ def on_button_click(format_style):
     formatted_mac = format_mac_address(mac_address, format_style)
     pyperclip.copy(formatted_mac)  # Copy formatted MAC to clipboard
 
+def convert_case():
+    """
+    Convert the case of the MAC address and copy to clipboard.
+    """
+    mac_address = mac_entry.get()
+    formatted_mac = ""
+    if mac_address.isupper():
+        formatted_mac = mac_address.lower()
+    else:
+        formatted_mac = mac_address.upper()
+    pyperclip.copy(formatted_mac) # Copy formatted MAC to clipboard
+
 def clipboard_listener():
     """
     Monitor the clipboard for MAC addresses and update the UI when detected.
@@ -73,7 +88,7 @@ window = tk.Tk()
 window.title("MAC Address Converter")
 window.resizable(False, False)
 window_width = 600
-window_height = 150
+window_height = 175
 window.geometry(f"{window_width}x{window_height}")
 
 # Create input box for MAC address
@@ -99,9 +114,11 @@ no_delimiters_button.grid(row=0, column=2, padx=5)
 dot_separated_button = tk.Button(button_frame, text="XXXX.XXXX.XXXX", command=lambda: on_button_click("dot_separated"))
 dot_separated_button.grid(row=0, column=3, padx=5)
 
+convert_case_button = tk.Button(window, text="Convert Case", command=lambda: convert_case())
+convert_case_button.pack(side=tk.BOTTOM, pady=(0, 5))
+
 # Function to handle the close event
 def on_close():
-    # formatted_mac_label.config(text="Formatted MAC will appear here.")  # Reset the label
     window.withdraw()  # Hide the window instead of closing it
 
 # Bind the close event (window close button)
