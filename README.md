@@ -18,7 +18,7 @@ You must have [python installed](https://www.python.org/downloads/). This script
 
 ## Automatically start and stop per user session
 
-### For Linux:
+### Linux Installation:
 
 #### Create a Systemd Service:
 
@@ -59,9 +59,7 @@ Replace `/wherever/you/want/to/keep/the/logs` with the full path to the desired 
 
 systemd will stop the service when you log out.
 
-### For Windows:
-
-WARNING: UNTESTED!!!
+### Windows Installation:
 
 #### Create a Batch File:
 
@@ -71,7 +69,7 @@ Create a batch file (e.g., start_mac_address_converter.bat) with the following c
     @echo off
     pythonw "C:\Scripts\mac_address_converter.py"
 
-pythonw runs the script without opening a command prompt window.
+`pythonw` runs the script without opening a command prompt window.
 
 #### Add to Startup Folder:
 
@@ -82,7 +80,7 @@ Place the batch file in this folder. The script will run automatically upon logi
 
 Windows will terminate the script when you log out because it’s running as part of your session.
 
-### For macOS:
+### macOS Installation:
 
 WARNING: UNTESTED!!!
 
