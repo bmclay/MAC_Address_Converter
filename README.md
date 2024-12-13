@@ -20,6 +20,9 @@ You must have [python installed](https://www.python.org/downloads/). This script
 
 ### Linux Installation:
 
+The script requires tkinter to be installed. It seems as if this is not installed by default on Fedora Workstation. Simply run:
+`sudo dnf install python3-tkinter`
+
 #### Create a Systemd Service:
 
 Create a service file, e.g., `mac_address_converter.service`, in `~/.config/systemd/user/`:

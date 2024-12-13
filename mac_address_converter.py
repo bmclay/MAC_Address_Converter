@@ -1,3 +1,9 @@
+# Be sure to install pyperclip
+# pip3 install pyperclip 
+
+# Fedora Prerequisites
+# sudo dnf install python3-tkinter
+
 import tkinter as tk
 import re
 import pyperclip
