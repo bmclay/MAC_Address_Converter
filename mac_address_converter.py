@@ -2,10 +2,7 @@ import tkinter as tk
 import re
 import pyperclip
 import time
-from enum import Enum
 import threading
-
-Color = Enum('Case', [('UPPER', 1), ('LOWER', 2)])
 
 def format_mac_address(mac, format_style="colons"):
     """
