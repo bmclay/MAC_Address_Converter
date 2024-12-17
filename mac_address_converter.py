@@ -7,8 +7,9 @@
 import tkinter as tk
 import re
 import pyperclip
-import time
 import threading
+
+prev_clipboard_content = ""
 
 def format_mac_address(mac, format_style="colons"):
     """
@@ -75,17 +76,19 @@ def clipboard_listener():
     """
     Monitor the clipboard for MAC addresses and update the UI when detected.
     """
-    prev_clipboard_content = ""
-    while True:
-        current_clipboard_content = pyperclip.paste()
+    try:
+        global prev_clipboard_content
+        current_clipboard_content = window.clipboard_get()
         if current_clipboard_content != prev_clipboard_content and is_mac_address(current_clipboard_content):
             mac_entry.delete(0, tk.END)
             mac_entry.insert(0, current_clipboard_content)
             update_button_labels(current_clipboard_content)
-            window.deiconify()  # Show the window
             prev_clipboard_content = current_clipboard_content
-        time.sleep(1)
-
+            window.deiconify()  # Show the window
+    except tk.TclError:
+        pass  # Handle cases where clipboard is empty or not accessible
+    window.after(500, clipboard_listener)  # Loop the clipboard_listener
+    
 # Create the main application window
 window = tk.Tk()
 window.title("MAC Address Converter")
