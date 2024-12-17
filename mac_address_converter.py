@@ -87,7 +87,7 @@ def clipboard_listener():
             window.deiconify()  # Show the window
     except tk.TclError:
         pass  # Handle cases where clipboard is empty or not accessible
-    window.after(500, clipboard_listener)  # Loop the clipboard_listener
+    window.after(200, clipboard_listener)  # Loop the clipboard_listener
     
 # Create the main application window
 window = tk.Tk()
