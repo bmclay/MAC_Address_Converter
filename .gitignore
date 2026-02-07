@@ -47,3 +47,6 @@ Thumbs.db
 # Icon creation artifacts
 icon_*.png
 create_icon.py
+
+# Claude Code user preferences
+.claude/

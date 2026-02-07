@@ -171,11 +171,19 @@ def check_clipboard():
 # Create the main application window
 window = tk.Tk()
 
-# Set WM_CLASS using wm_class method (must be called before window is mapped)
+# Set WM_CLASS for Linux desktop environment icon matching
 try:
-    window.wm_class('MacAddressConverter')
+    # Set the application name (first part of WM_CLASS)
+    # This allows the desktop environment to match the window with the .desktop file
+    window.tk.call('tk', 'appname', 'mac-address-converter')
+    # Try to set the window class (second part of WM_CLASS)
+    # This may fail on some Tk versions, but the appname alone is sufficient
+    try:
+        window.tk.call('wm', 'class', window._w, 'MacAddressConverter')
+    except:
+        pass  # Expected to fail on some Tk versions, appname is sufficient
 except Exception as e:
-    print(f"Could not set wm_class: {e}", file=sys.stderr)
+    print(f"Could not set application name: {e}", file=sys.stderr)
 
 window.title("MAC Address Converter")
 window.resizable(False, False)
