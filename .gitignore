@@ -27,6 +27,7 @@ wheels/
 *.manifest
 *.spec.bak
 build/
+dist/
 
 # IDEs
 .vscode/
