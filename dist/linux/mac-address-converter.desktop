@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=MAC Address Converter
+Comment=Convert MAC addresses between formats
+Exec=mac-address-converter
+Icon=mac-address-converter
+Terminal=false
+Categories=Utility;Network;
+StartupNotify=false
+StartupWMClass=MacAddressConverter
