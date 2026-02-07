@@ -1,26 +1,40 @@
-# Installation script for MAC Address Converter (Windows)
+﻿# Installation script for MAC Address Converter (Windows)
 # Run with: powershell -ExecutionPolicy Bypass -File install.ps1
 
 $ErrorActionPreference = "Stop"
 
 $AppName = "mac-address-converter.exe"
-$InstallDir = "$env:LOCALAPPDATA\MACAddressConverter"
-$StartupDir = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
-$ShortcutPath = "$StartupDir\MAC Address Converter.lnk"
+$InstallDir = Join-Path -Path $env:LOCALAPPDATA -ChildPath 'MACAddressConverter'
+$StartupDir = Join-Path -Path $env:APPDATA -ChildPath 'Microsoft\Windows\Start Menu\Programs\Startup'
+$ShortcutPath = Join-Path -Path $StartupDir -ChildPath 'MAC Address Converter.lnk'
 
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "MAC Address Converter - Windows Installer" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Stop any existing running instances
+Write-Host "Stopping any running instances..." -ForegroundColor Yellow
+Get-Process -Name "mac-address-converter" -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Sleep -Seconds 1
+Write-Host "✓ Done" -ForegroundColor Green
+
+# Remove legacy startup batch file if present
+$LegacyBat = Join-Path -Path $StartupDir -ChildPath 'start_mac_address_converter.bat'
+if (Test-Path $LegacyBat) {
+    Write-Host "Removing legacy startup script..." -ForegroundColor Yellow
+    Remove-Item $LegacyBat -Force
+    Write-Host "✓ Legacy startup script removed" -ForegroundColor Green
+}
+
 # Create installation directory
 Write-Host "Creating installation directory..." -ForegroundColor Yellow
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
 # Copy the executable
-if (Test-Path ".\dist\$AppName") {
+if (Test-Path (Join-Path -Path ".\dist" -ChildPath $AppName)) {
     Write-Host "Installing executable to $InstallDir..." -ForegroundColor Yellow
-    Copy-Item ".\dist\$AppName" -Destination "$InstallDir\" -Force
+    Copy-Item (Join-Path -Path ".\dist" -ChildPath $AppName) -Destination $InstallDir -Force
     Write-Host "✓ Executable installed" -ForegroundColor Green
 } else {
     Write-Host "Error: Executable not found. Please build the application first with: pyinstaller build_config.spec" -ForegroundColor Red
@@ -31,7 +45,7 @@ if (Test-Path ".\dist\$AppName") {
 Write-Host "Creating startup shortcut..." -ForegroundColor Yellow
 $WScriptShell = New-Object -ComObject WScript.Shell
 $Shortcut = $WScriptShell.CreateShortcut($ShortcutPath)
-$Shortcut.TargetPath = "$InstallDir\$AppName"
+$Shortcut.TargetPath = (Join-Path -Path $InstallDir -ChildPath $AppName)
 $Shortcut.WorkingDirectory = $InstallDir
 $Shortcut.Description = "MAC Address Converter - Auto-format MAC addresses"
 $Shortcut.Save()
@@ -40,7 +54,7 @@ Write-Host "✓ Startup shortcut created" -ForegroundColor Green
 # Start the application
 Write-Host ""
 Write-Host "Starting MAC Address Converter..." -ForegroundColor Yellow
-Start-Process -FilePath "$InstallDir\$AppName"
+Start-Process -FilePath (Join-Path -Path $InstallDir -ChildPath $AppName)
 
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan

@@ -28,9 +28,9 @@
 
 ## 📥 Installation
 
-### For End Users (Recommended)
+### For End Users
 
-Download the pre-built package for your platform and run the installer:
+Your administrator will provide a ZIP file for your platform. Extract it and run the installer:
 
 <table>
 <tr>
@@ -38,9 +38,10 @@ Download the pre-built package for your platform and run the installer:
 
 **🐧 Linux**
 
-1. Download `mac-address-converter-linux.zip`
-2. Extract and run:
+Extract, then run:
+
 ```bash
+chmod +x install.sh
 ./install.sh
 ```
 
@@ -49,10 +50,10 @@ Download the pre-built package for your platform and run the installer:
 
 **🪟 Windows**
 
-1. Download `mac-address-converter-windows.zip`
-2. Extract and run:
+Extract, then right-click `install.ps1` and select **Run with PowerShell**, or run:
+
 ```powershell
-install.ps1
+powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
 </td>
@@ -60,9 +61,10 @@ install.ps1
 
 **🍎 macOS**
 
-1. Download `mac-address-converter-macos.zip`
-2. Extract and run:
+Extract, then run:
+
 ```bash
+chmod +x install_macos.sh
 ./install_macos.sh
 ```
 
@@ -73,20 +75,58 @@ install.ps1
 **That's it!** The app will start automatically and run on every login.
 
 > **📝 Note for Linux users:** You may need to install tkinter first:
+>
 > - Ubuntu/Debian: `sudo apt install python3-tk`
 > - Fedora: `sudo dnf install python3-tkinter`
 
+### Building & Distributing
+
+To create the distribution packages for your users, you must build on each target platform (PyInstaller cannot cross-compile).
+
+1. **Install build dependencies:**
+
+   ```bash
+   pip install pyinstaller pyperclip
+   ```
+
+2. **Build the executable:**
+
+   ```bash
+   pyinstaller build_config.spec
+   ```
+
+3. **Create the distribution ZIP:**
+
+   **Windows (PowerShell):**
+
+   ```powershell
+   Compress-Archive -Path dist\, install.ps1, uninstall.ps1, docs\QUICK_START.md -DestinationPath mac-address-converter-windows.zip
+   ```
+
+   **Linux / macOS:**
+
+   ```bash
+   zip -r mac-address-converter-linux.zip dist/ install.sh uninstall.sh docs/QUICK_START.md
+   zip -r mac-address-converter-macos.zip dist/ install_macos.sh docs/QUICK_START.md
+   ```
+
+4. **Share the ZIP** with your users (email, file share, GitHub Releases, etc.)
+
+See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) and [DISTRIBUTION.md](DISTRIBUTION.md) for more options.
+
 ### For Developers
 
-If you want to run from source or build the application yourself:
+If you want to run from source:
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/yourusername/MAC_Address_Converter.git
    cd MAC_Address_Converter
    ```
 
 2. **Install dependencies:**
+
    ```bash
    # Linux only: sudo apt install python3-tk (or equivalent)
    # No additional Python packages needed!
@@ -97,25 +137,17 @@ If you want to run from source or build the application yourself:
    python3 mac_address_converter.py
    ```
 
-4. **Or build standalone executable:**
-   ```bash
-   pip install pyinstaller
-   pyinstaller build_config.spec
-   ```
-
-See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for detailed build instructions.
-
 ## 🎯 Usage
 
 Once installed, the MAC Address Converter runs silently in the background. Simply copy a MAC address and the converter window will appear automatically with these options:
 
-| Format | Example |
-|--------|---------|
-| **Colons** | `AA:BB:CC:DD:EE:FF` |
-| **Dashes** | `AA-BB-CC-DD-EE-FF` |
-| **Dots** | `AABB.CCDD.EEFF` |
-| **No Delimiters** | `AABBCCDDEEFF` |
-| **Convert Case** | Toggle upper/lowercase |
+| Format            | Example                |
+| ----------------- | ---------------------- |
+| **Colons**        | `AA:BB:CC:DD:EE:FF`    |
+| **Dashes**        | `AA-BB-CC-DD-EE-FF`    |
+| **Dots**          | `AABB.CCDD.EEFF`       |
+| **No Delimiters** | `AABBCCDDEEFF`         |
+| **Convert Case**  | Toggle upper/lowercase |
 
 Click any format to copy it to your clipboard instantly.
 
@@ -133,6 +165,7 @@ The converter automatically detects MAC addresses in these formats:
 ### Check Status
 
 **Linux:**
+
 ```bash
 systemctl --user status mac-address-converter.service
 ```
@@ -141,6 +174,7 @@ systemctl --user status mac-address-converter.service
 Check Task Manager → Background Processes
 
 **macOS:**
+
 ```bash
 launchctl list | grep macaddressconverter
 ```
@@ -148,6 +182,7 @@ launchctl list | grep macaddressconverter
 ### Stop Service
 
 **Linux:**
+
 ```bash
 systemctl --user stop mac-address-converter.service
 ```
@@ -156,6 +191,7 @@ systemctl --user stop mac-address-converter.service
 End process from Task Manager
 
 **macOS:**
+
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.macaddressconverter.app.plist
 ```
@@ -165,11 +201,13 @@ launchctl unload ~/Library/LaunchAgents/com.macaddressconverter.app.plist
 Run the uninstall script included with your installation:
 
 **Linux/macOS:**
+
 ```bash
 ./uninstall.sh
 ```
 
 **Windows:**
+
 ```powershell
 uninstall.ps1
 ```
@@ -212,6 +250,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 💡 Use Cases
 
 Perfect for:
+
 - 🔧 Network administrators
 - 💻 IT professionals
 - 🔐 Security engineers
@@ -219,7 +258,8 @@ Perfect for:
 
 ## 🐛 Troubleshooting
 
-### Linux: "No module named '_tkinter'"
+### Linux: "No module named '\_tkinter'"
+
 ```bash
 # Ubuntu/Debian
 sudo apt install python3-tk
@@ -232,9 +272,11 @@ sudo pacman -S tk
 ```
 
 ### Windows: Antivirus Warning
+
 The executable may trigger false positives. This is common with PyInstaller builds. You can safely add an exception.
 
 ### macOS: "App can't be opened"
+
 Right-click the app and select "Open" instead of double-clicking. This is a Gatekeeper security feature for unsigned apps.
 
 ## 📧 Support

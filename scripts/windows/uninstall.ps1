@@ -13,6 +13,14 @@ Write-Host "Stopping running instances..." -ForegroundColor Yellow
 Get-Process -Name "mac-address-converter" -ErrorAction SilentlyContinue | Stop-Process -Force
 Write-Host "✓ Stopped" -ForegroundColor Green
 
+# Remove legacy startup batch file if present
+$LegacyBat = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\start_mac_address_converter.bat"
+if (Test-Path $LegacyBat) {
+    Write-Host "Removing legacy startup script..." -ForegroundColor Yellow
+    Remove-Item $LegacyBat -Force
+    Write-Host "✓ Legacy startup script removed" -ForegroundColor Green
+}
+
 # Remove startup shortcut
 if (Test-Path $ShortcutPath) {
     Write-Host "Removing startup shortcut..." -ForegroundColor Yellow
