@@ -94,7 +94,15 @@ def on_button_click(format_style):
     window.clipboard_clear()
     window.clipboard_append(formatted_mac)
     window.update()  # Ensure clipboard is updated
-    window.after(100, dismiss_toast)
+    # Update display with the new format and reset timer
+    mac_entry.config(state="normal")
+    mac_entry.delete(0, tk.END)
+    mac_entry.insert(0, formatted_mac)
+    mac_entry.config(state="readonly")
+    update_button_labels(formatted_mac)
+    # Update tracked clipboard content to avoid re-triggering
+    check_clipboard.prev_content = formatted_mac
+    start_auto_dismiss_timer()
 
 
 def convert_case():
@@ -110,7 +118,15 @@ def convert_case():
     window.clipboard_clear()
     window.clipboard_append(formatted_mac)
     window.update()  # Ensure clipboard is updated
-    window.after(100, dismiss_toast)
+    # Update display with the new case and reset timer
+    mac_entry.config(state="normal")
+    mac_entry.delete(0, tk.END)
+    mac_entry.insert(0, formatted_mac)
+    mac_entry.config(state="readonly")
+    update_button_labels(formatted_mac)
+    # Update tracked clipboard content to avoid re-triggering
+    check_clipboard.prev_content = formatted_mac
+    start_auto_dismiss_timer()
 
 
 def create_styled_button(parent, text, command, row=0, column=0):
@@ -192,9 +208,13 @@ def slide_up():
     interval = TOAST["slide_interval_ms"]
 
     # If toast is already visible and near its resting position, just reset timer
+    # (the content has already been updated before slide_up is called)
     if window.winfo_viewable():
         current_y = window.winfo_y()
         if abs(current_y - target_y) < step * 2:
+            # Ensure window is in correct position and on top
+            window.geometry(f"{toast_w}x{toast_h}+{target_x}+{target_y}")
+            window.lift()
             start_auto_dismiss_timer()
             return
 
@@ -287,6 +307,14 @@ def dismiss_toast():
     slide_down()
 
 
+def normalize_mac(mac):
+    """
+    Normalize a MAC address to a canonical form (uppercase, no delimiters)
+    for comparison purposes.
+    """
+    return re.sub(r"[^0-9A-Fa-f]", "", mac).upper()
+
+
 def check_clipboard():
     """
     Monitor the clipboard for MAC addresses using Tkinter's native clipboard.
@@ -300,18 +328,29 @@ def check_clipboard():
         else:
             prev_content = ""
 
+        if hasattr(check_clipboard, "prev_mac_normalized"):
+            prev_mac_normalized = check_clipboard.prev_mac_normalized
+        else:
+            prev_mac_normalized = ""
+
         if current_clipboard_content != prev_content and is_mac_address(
             current_clipboard_content
         ):
-            mac_entry.config(state="normal")
-            mac_entry.delete(0, tk.END)
-            mac_entry.insert(0, current_clipboard_content)
-            mac_entry.config(state="readonly")
-            update_button_labels(current_clipboard_content)
-            slide_up()
+            current_mac_normalized = normalize_mac(current_clipboard_content)
+            # Only show popup if this is a different MAC address (not just reformatted)
+            if current_mac_normalized != prev_mac_normalized:
+                mac_entry.config(state="normal")
+                mac_entry.delete(0, tk.END)
+                mac_entry.insert(0, current_clipboard_content)
+                mac_entry.config(state="readonly")
+                update_button_labels(current_clipboard_content)
+                slide_up()
+                check_clipboard.prev_mac_normalized = current_mac_normalized
             check_clipboard.prev_content = current_clipboard_content
         elif current_clipboard_content != prev_content:
             check_clipboard.prev_content = current_clipboard_content
+            # Reset normalized MAC when clipboard contains non-MAC content
+            check_clipboard.prev_mac_normalized = ""
     except tk.TclError:
         pass
     except Exception as e:
