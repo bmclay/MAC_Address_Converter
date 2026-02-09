@@ -3,6 +3,9 @@
 
 set -e
 
+# Resolve script directory so paths work regardless of where it's run from
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 APP_NAME="mac-address-converter"
 INSTALL_DIR="$HOME/.local/bin"
 SERVICE_DIR="$HOME/.config/systemd/user"
@@ -20,23 +23,24 @@ mkdir -p "$INSTALL_DIR"
 mkdir -p "$ICON_DIR"
 mkdir -p "$DESKTOP_DIR"
 
-# Copy the executable
-if [ -f "./dist/$APP_NAME" ]; then
+# Copy the executable (located next to this script in the dist package)
+if [ -f "$SCRIPT_DIR/$APP_NAME" ]; then
     echo "Installing executable to $INSTALL_DIR..."
-    cp "./dist/$APP_NAME" "$INSTALL_DIR/"
+    cp "$SCRIPT_DIR/$APP_NAME" "$INSTALL_DIR/"
     chmod +x "$INSTALL_DIR/$APP_NAME"
     echo "✓ Executable installed"
 else
-    echo "Error: Executable not found. Please build the application first with: pyinstaller build_config.spec"
+    echo "Error: Executable not found at $SCRIPT_DIR/$APP_NAME"
+    echo "Please build the application first with: ./build.sh"
     exit 1
 fi
 
 # Install icon
-if [ -f "./icon.png" ]; then
+if [ -f "$SCRIPT_DIR/icon.png" ]; then
     echo "Installing icon..."
 
     # Install the main 256x256 icon
-    cp "./icon.png" "$ICON_DIR/$APP_NAME.png"
+    cp "$SCRIPT_DIR/icon.png" "$ICON_DIR/$APP_NAME.png"
 
     # Install additional icon sizes for better desktop environment compatibility
     # These sizes are commonly used by desktop environments
@@ -44,10 +48,10 @@ if [ -f "./icon.png" ]; then
         size_dir="$ICON_BASE_DIR/${size}x${size}/apps"
         mkdir -p "$size_dir"
         if command -v convert &> /dev/null; then
-            convert "./icon.png" -resize ${size}x${size} "$size_dir/$APP_NAME.png" 2>/dev/null || true
+            convert "$SCRIPT_DIR/icon.png" -resize ${size}x${size} "$size_dir/$APP_NAME.png" 2>/dev/null || true
         else
             # If ImageMagick is not available, just copy the original
-            cp "./icon.png" "$size_dir/$APP_NAME.png"
+            cp "$SCRIPT_DIR/icon.png" "$size_dir/$APP_NAME.png"
         fi
     done
 
@@ -124,9 +128,9 @@ else
 fi
 
 # Install desktop file
-if [ -f "./$APP_NAME.desktop" ]; then
+if [ -f "$SCRIPT_DIR/$APP_NAME.desktop" ]; then
     echo "Installing desktop file..."
-    cp "./$APP_NAME.desktop" "$DESKTOP_DIR/"
+    cp "$SCRIPT_DIR/$APP_NAME.desktop" "$DESKTOP_DIR/"
     chmod +x "$DESKTOP_DIR/$APP_NAME.desktop"
     echo "✓ Desktop file installed"
 

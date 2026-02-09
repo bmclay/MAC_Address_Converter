@@ -3,6 +3,9 @@
 
 $ErrorActionPreference = "Stop"
 
+# Resolve script directory so paths work regardless of where it's run from
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 $AppName = "mac-address-converter.exe"
 $InstallDir = Join-Path -Path $env:LOCALAPPDATA -ChildPath 'MACAddressConverter'
 $StartupDir = Join-Path -Path $env:APPDATA -ChildPath 'Microsoft\Windows\Start Menu\Programs\Startup'
@@ -31,13 +34,15 @@ if (Test-Path $LegacyBat) {
 Write-Host "Creating installation directory..." -ForegroundColor Yellow
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
-# Copy the executable
-if (Test-Path (Join-Path -Path ".\dist" -ChildPath $AppName)) {
+# Copy the executable (located next to this script in the dist package)
+$ExePath = Join-Path -Path $ScriptDir -ChildPath $AppName
+if (Test-Path $ExePath) {
     Write-Host "Installing executable to $InstallDir..." -ForegroundColor Yellow
-    Copy-Item (Join-Path -Path ".\dist" -ChildPath $AppName) -Destination $InstallDir -Force
+    Copy-Item $ExePath -Destination $InstallDir -Force
     Write-Host "✓ Executable installed" -ForegroundColor Green
 } else {
-    Write-Host "Error: Executable not found. Please build the application first with: pyinstaller build_config.spec" -ForegroundColor Red
+    Write-Host "Error: Executable not found at $ExePath" -ForegroundColor Red
+    Write-Host "Please build the application first with: .\build.ps1" -ForegroundColor Red
     exit 1
 }
 

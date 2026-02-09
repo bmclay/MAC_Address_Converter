@@ -1,10 +1,14 @@
 # Fedora Prerequisites
 # sudo dnf install python3-tkinter
 
+# sample mac address: AA:BB:CC:DD:EE:FF
+
 import tkinter as tk
 from tkinter import font as tkfont
 import re
 import sys
+import os
+import platform
 
 # Modern color scheme - sleek dark theme
 COLORS = {
@@ -19,6 +23,23 @@ COLORS = {
     "button_hover": "#3e4753",  # Lighter gray on hover
     "border": "#404040",  # Subtle borders
 }
+
+# Toast notification configuration
+TOAST = {
+    "width": 360,
+    "height": 200,
+    "taskbar_margin": 10,
+    "slide_step_px": 8,
+    "slide_interval_ms": 10,
+    "auto_dismiss_ms": 5000,
+}
+
+# Platform detection
+_os = platform.system()
+
+# Animation and timer state
+_animation_id = None
+_dismiss_timer_id = None
 
 
 def format_mac_address(mac, format_style="colons"):
@@ -75,8 +96,7 @@ def on_button_click(format_style):
     window.clipboard_clear()
     window.clipboard_append(formatted_mac)
     window.update()  # Ensure clipboard is updated
-    # Hide window after copying
-    window.after(100, window.withdraw)
+    window.after(100, dismiss_toast)
 
 
 def convert_case():
@@ -84,7 +104,6 @@ def convert_case():
     Convert the case of the MAC address and copy to clipboard.
     """
     mac_address = mac_entry.get()
-    formatted_mac = ""
     if mac_address.isupper():
         formatted_mac = mac_address.lower()
     else:
@@ -93,8 +112,7 @@ def convert_case():
     window.clipboard_clear()
     window.clipboard_append(formatted_mac)
     window.update()  # Ensure clipboard is updated
-    # Hide window after copying
-    window.after(100, window.withdraw)
+    window.after(100, dismiss_toast)
 
 
 def create_styled_button(parent, text, command, row=0, column=0):
@@ -112,12 +130,11 @@ def create_styled_button(parent, text, command, row=0, column=0):
         font=("Consolas", 9),
         bd=0,
         padx=8,
-        pady=8,
+        pady=6,
         cursor="hand2",
         relief=tk.FLAT,
     )
 
-    # Hover effects
     def on_enter(e):
         button.config(bg=COLORS["button_hover"], fg=COLORS["primary_hover"])
 
@@ -127,8 +144,149 @@ def create_styled_button(parent, text, command, row=0, column=0):
     button.bind("<Enter>", on_enter)
     button.bind("<Leave>", on_leave)
 
-    button.grid(row=row, column=column, padx=4, pady=4, sticky="ew")
+    button.grid(row=row, column=column, padx=3, pady=3, sticky="ew")
     return button
+
+
+def get_toast_position(offscreen=False):
+    """
+    Calculate bottom-right screen position for the toast.
+    Returns (x, y) coordinates.
+    """
+    toast_w = TOAST["width"]
+    toast_h = TOAST["height"]
+    margin = TOAST["taskbar_margin"]
+
+    screen_w = window.winfo_screenwidth()
+    screen_h = window.winfo_screenheight()
+
+    # On Windows, query the actual work area (excludes taskbar)
+    if _os == "Windows":
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            rect = wintypes.RECT()
+            ctypes.windll.user32.SystemParametersInfoW(0x0030, 0, ctypes.byref(rect), 0)
+            screen_w = rect.right
+            screen_h = rect.bottom
+        except Exception:
+            pass
+
+    x = screen_w - toast_w - margin
+
+    if offscreen:
+        y = screen_h + toast_h
+    else:
+        y = screen_h - toast_h - margin
+
+    return x, y
+
+
+def slide_up():
+    """Animate the toast sliding up from below the screen edge."""
+    global _animation_id
+
+    toast_w = TOAST["width"]
+    toast_h = TOAST["height"]
+    target_x, target_y = get_toast_position(offscreen=False)
+    step = TOAST["slide_step_px"]
+    interval = TOAST["slide_interval_ms"]
+
+    # If toast is already visible and near its resting position, just reset timer
+    if window.winfo_viewable():
+        current_y = window.winfo_y()
+        if abs(current_y - target_y) < step * 2:
+            start_auto_dismiss_timer()
+            return
+
+    # Cancel any running animation
+    if _animation_id is not None:
+        window.after_cancel(_animation_id)
+        _animation_id = None
+
+    # Set initial offscreen position
+    start_x, start_y = get_toast_position(offscreen=True)
+    window.geometry(f"{toast_w}x{toast_h}+{start_x}+{start_y}")
+    window.deiconify()
+
+    def animate():
+        global _animation_id
+        current_y = window.winfo_y()
+        if current_y <= target_y:
+            window.geometry(f"{toast_w}x{toast_h}+{target_x}+{target_y}")
+            _animation_id = None
+            start_auto_dismiss_timer()
+            return
+        new_y = max(current_y - step, target_y)
+        window.geometry(f"{toast_w}x{toast_h}+{target_x}+{new_y}")
+        _animation_id = window.after(interval, animate)
+
+    # Check if Wayland is ignoring position requests
+    window.update_idletasks()
+    actual_y = window.winfo_y()
+    if _os == "Linux" and actual_y == 0 and start_y > 0:
+        # Compositor likely ignoring geometry - show without animation
+        window.geometry(f"{toast_w}x{toast_h}+{target_x}+{target_y}")
+        start_auto_dismiss_timer()
+        return
+
+    _animation_id = window.after(interval, animate)
+
+
+def slide_down():
+    """Animate the toast sliding down off screen, then withdraw."""
+    global _animation_id
+
+    toast_w = TOAST["width"]
+    toast_h = TOAST["height"]
+    screen_h = window.winfo_screenheight()
+    step = TOAST["slide_step_px"]
+    interval = TOAST["slide_interval_ms"]
+    current_x = window.winfo_x()
+
+    # Cancel any running animation
+    if _animation_id is not None:
+        window.after_cancel(_animation_id)
+        _animation_id = None
+
+    def animate():
+        global _animation_id
+        current_y = window.winfo_y()
+        if current_y >= screen_h:
+            window.withdraw()
+            _animation_id = None
+            return
+        new_y = current_y + step
+        window.geometry(f"{toast_w}x{toast_h}+{current_x}+{new_y}")
+        _animation_id = window.after(interval, animate)
+
+    _animation_id = window.after(interval, animate)
+
+
+def start_auto_dismiss_timer():
+    """Start or restart the auto-dismiss countdown."""
+    global _dismiss_timer_id
+    if _dismiss_timer_id is not None:
+        window.after_cancel(_dismiss_timer_id)
+    _dismiss_timer_id = window.after(TOAST["auto_dismiss_ms"], dismiss_toast)
+
+
+def cancel_auto_dismiss_timer():
+    """Cancel the auto-dismiss countdown (e.g., on mouse hover)."""
+    global _dismiss_timer_id
+    if _dismiss_timer_id is not None:
+        window.after_cancel(_dismiss_timer_id)
+        _dismiss_timer_id = None
+
+
+def dismiss_toast():
+    """Dismiss the toast with slide-down animation."""
+    global _dismiss_timer_id
+    if _dismiss_timer_id is not None:
+        window.after_cancel(_dismiss_timer_id)
+        _dismiss_timer_id = None
+    slide_down()
 
 
 def check_clipboard():
@@ -137,10 +295,8 @@ def check_clipboard():
     This avoids focus stealing and screen flickering on Linux.
     """
     try:
-        # Use Tkinter's clipboard_get() which doesn't steal focus
         current_clipboard_content = window.clipboard_get()
 
-        # Check if clipboard content changed and is a MAC address
         if hasattr(check_clipboard, "prev_content"):
             prev_content = check_clipboard.prev_content
         else:
@@ -149,141 +305,137 @@ def check_clipboard():
         if current_clipboard_content != prev_content and is_mac_address(
             current_clipboard_content
         ):
+            mac_entry.config(state="normal")
             mac_entry.delete(0, tk.END)
             mac_entry.insert(0, current_clipboard_content)
+            mac_entry.config(state="readonly")
             update_button_labels(current_clipboard_content)
-            window.deiconify()  # Show the window
+            slide_up()
             check_clipboard.prev_content = current_clipboard_content
         elif current_clipboard_content != prev_content:
-            # Update prev_content even if it's not a MAC address
             check_clipboard.prev_content = current_clipboard_content
     except tk.TclError:
-        # Clipboard is empty or contains non-text data
         pass
     except Exception as e:
-        # Log error but don't crash
         print(f"Clipboard check error: {e}", file=sys.stderr)
 
-    # Schedule next check (500ms for good responsiveness without being aggressive)
     window.after(500, check_clipboard)
 
 
-# Create the main application window
+# --- Window setup ---
+
 window = tk.Tk()
 
 # Set WM_CLASS for Linux desktop environment icon matching
 try:
-    # Set the application name (first part of WM_CLASS)
-    # This allows the desktop environment to match the window with the .desktop file
-    window.tk.call('tk', 'appname', 'mac-address-converter')
-    # Try to set the window class (second part of WM_CLASS)
-    # This may fail on some Tk versions, but the appname alone is sufficient
+    window.tk.call("tk", "appname", "mac-address-converter")
     try:
-        window.tk.call('wm', 'class', window._w, 'MacAddressConverter')
-    except:
-        pass  # Expected to fail on some Tk versions, appname is sufficient
+        window.tk.call("wm", "class", window._w, "MacAddressConverter")
+    except Exception:
+        pass
 except Exception as e:
     print(f"Could not set application name: {e}", file=sys.stderr)
 
 window.title("MAC Address Converter")
+window.overrideredirect(True)
 window.resizable(False, False)
-window_width = 620
-window_height = 240
-window.geometry(f"{window_width}x{window_height}")
-window.configure(bg=COLORS["bg"])
+window.configure(bg=COLORS["border"])
+window.attributes("-topmost", True)
+
+# Platform-specific window hints
+if _os == "Linux":
+    try:
+        window.attributes("-type", "notification")
+    except tk.TclError:
+        pass
 
 # Set application icon
 try:
-    import os
-
-    # Get the correct path for both development and PyInstaller bundled scenarios
     if getattr(sys, "frozen", False):
-        # Running as compiled executable (PyInstaller)
         base_path = sys._MEIPASS
     else:
-        # Running as script
         base_path = os.path.dirname(os.path.abspath(__file__))
 
     icon_path = os.path.join(base_path, "assets", "icon.png")
     if getattr(sys, "frozen", False):
-        # PyInstaller bundles assets to root of _MEIPASS
         icon_path = os.path.join(base_path, "icon.png")
 
     if os.path.exists(icon_path):
         icon = tk.PhotoImage(file=icon_path)
         window.iconphoto(True, icon)
-    else:
-        print(f"Icon not found at: {icon_path}", file=sys.stderr)
 except Exception as e:
     print(f"Could not load icon: {e}", file=sys.stderr)
 
-# Create main container
-main_frame = tk.Frame(window, bg=COLORS["bg"])
-main_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
-# Card container for content
-card = tk.Frame(
-    main_frame,
-    bg=COLORS["card_bg"],
-    highlightthickness=1,
-    highlightbackground=COLORS["border"],
-)
-card.pack(fill=tk.BOTH, expand=True)
+# --- Toast layout ---
+
+# Border frame (1px border via background color showing through padding)
+card = tk.Frame(window, bg=COLORS["card_bg"])
+card.pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
 
 card_inner = tk.Frame(card, bg=COLORS["card_bg"])
-card_inner.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+card_inner.pack(fill=tk.BOTH, expand=True, padx=10, pady=8)
 
-# Title
+# Top row: title + close button
+top_row = tk.Frame(card_inner, bg=COLORS["card_bg"])
+top_row.pack(fill=tk.X, pady=(0, 4))
+
 header_label = tk.Label(
-    card_inner,
+    top_row,
     text="MAC Address Converter",
-    font=("Segoe UI", 12, "bold"),
+    font=("Segoe UI", 9, "bold"),
     bg=COLORS["card_bg"],
     fg=COLORS["text"],
+    anchor="w",
 )
-header_label.pack(pady=(0, 3))
+header_label.pack(side=tk.LEFT)
 
-# Subtitle
-subtitle_label = tk.Label(
-    card_inner,
-    text="Select format to copy",
-    font=("Segoe UI", 8),
+close_button = tk.Label(
+    top_row,
+    text="X",
+    font=("Consolas", 9, "bold"),
     bg=COLORS["card_bg"],
     fg=COLORS["text_secondary"],
+    cursor="hand2",
+    padx=4,
 )
-subtitle_label.pack(pady=(0, 10))
+close_button.pack(side=tk.RIGHT)
 
-# MAC address input
-entry_frame = tk.Frame(
-    card_inner,
-    bg=COLORS["input_bg"],
-    highlightthickness=1,
-    highlightbackground=COLORS["border"],
-)
-entry_frame.pack(pady=(0, 12))
 
+def on_close_enter(e):
+    close_button.config(fg=COLORS["primary_hover"])
+
+
+def on_close_leave(e):
+    close_button.config(fg=COLORS["text_secondary"])
+
+
+close_button.bind("<Enter>", on_close_enter)
+close_button.bind("<Leave>", on_close_leave)
+close_button.bind("<Button-1>", lambda e: dismiss_toast())
+
+# MAC address display (readonly entry)
 mac_entry = tk.Entry(
-    entry_frame,
-    width=20,
-    font=("Consolas", 11, "bold"),
+    card_inner,
+    width=22,
+    font=("Consolas", 10, "bold"),
     bg=COLORS["input_bg"],
     fg=COLORS["primary_hover"],
     insertbackground=COLORS["primary_hover"],
     bd=0,
     relief=tk.FLAT,
     justify="center",
+    state="readonly",
+    readonlybackground=COLORS["input_bg"],
 )
-mac_entry.pack(padx=12, pady=8)
+mac_entry.pack(pady=(0, 8), ipady=4)
 
-# Format buttons in single row
+# Format buttons in 2x2 grid
 button_frame = tk.Frame(card_inner, bg=COLORS["card_bg"])
-button_frame.pack(pady=(0, 10), fill=tk.X)
+button_frame.pack(pady=(0, 6), fill=tk.X)
 
-# Configure grid columns to expand evenly
 button_frame.grid_columnconfigure(0, weight=1)
 button_frame.grid_columnconfigure(1, weight=1)
-button_frame.grid_columnconfigure(2, weight=1)
-button_frame.grid_columnconfigure(3, weight=1)
 
 colons_button = create_styled_button(
     button_frame, "XX:XX:XX:XX:XX:XX", lambda: on_button_click("colons"), 0, 0
@@ -292,10 +444,10 @@ dashes_button = create_styled_button(
     button_frame, "XX-XX-XX-XX-XX-XX", lambda: on_button_click("dashes"), 0, 1
 )
 no_delimiters_button = create_styled_button(
-    button_frame, "XXXXXXXXXXXX", lambda: on_button_click("no_delimiters"), 0, 2
+    button_frame, "XXXXXXXXXXXX", lambda: on_button_click("no_delimiters"), 1, 0
 )
 dot_separated_button = create_styled_button(
-    button_frame, "XXXX.XXXX.XXXX", lambda: on_button_click("dot_separated"), 0, 3
+    button_frame, "XXXX.XXXX.XXXX", lambda: on_button_click("dot_separated"), 1, 1
 )
 
 # Convert case button
@@ -307,14 +459,14 @@ convert_case_button = tk.Button(
     fg=COLORS["text"],
     activebackground=COLORS["primary_hover"],
     activeforeground=COLORS["bg"],
-    font=("Segoe UI", 9, "bold"),
+    font=("Segoe UI", 8, "bold"),
     bd=0,
-    padx=20,
-    pady=6,
+    padx=12,
+    pady=4,
     cursor="hand2",
     relief=tk.FLAT,
 )
-convert_case_button.pack(fill=tk.X, padx=40)
+convert_case_button.pack(fill=tk.X, padx=20)
 
 
 def on_convert_enter(e):
@@ -328,20 +480,21 @@ def on_convert_leave(e):
 convert_case_button.bind("<Enter>", on_convert_enter)
 convert_case_button.bind("<Leave>", on_convert_leave)
 
+# Pause auto-dismiss when mouse is over the toast
+window.bind("<Enter>", lambda e: cancel_auto_dismiss_timer())
+window.bind("<Leave>", lambda e: start_auto_dismiss_timer())
 
-# Function to handle the close event
-def on_close():
-    window.withdraw()  # Hide the window instead of closing it
+# Safety net for WM_DELETE_WINDOW (shouldn't fire with overrideredirect, but just in case)
+window.protocol("WM_DELETE_WINDOW", dismiss_toast)
 
-
-# Bind the close event (window close button)
-window.protocol("WM_DELETE_WINDOW", on_close)
-
-# Hide the window initially
+# Set initial geometry offscreen and hide
+toast_w = TOAST["width"]
+toast_h = TOAST["height"]
+start_x, start_y = get_toast_position(offscreen=True)
+window.geometry(f"{toast_w}x{toast_h}+{start_x}+{start_y}")
 window.withdraw()
 
-# Start clipboard monitoring using Tkinter's event loop (no threading needed)
-# This runs every 500ms without stealing focus or causing flicker
+# Start clipboard monitoring
 window.after(500, check_clipboard)
 
 # Start the Tkinter event loop

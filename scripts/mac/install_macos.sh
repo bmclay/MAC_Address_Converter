@@ -3,6 +3,9 @@
 
 set -e
 
+# Resolve script directory so paths work regardless of where it's run from
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 APP_NAME="MAC Address Converter.app"
 INSTALL_DIR="$HOME/Applications"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
@@ -15,15 +18,16 @@ echo "======================================"
 # Create installation directory if it doesn't exist
 mkdir -p "$INSTALL_DIR"
 
-# Copy the app bundle
-if [ -d "./dist/$APP_NAME" ]; then
+# Copy the app bundle (located next to this script in the dist package)
+if [ -d "$SCRIPT_DIR/$APP_NAME" ]; then
     echo "Installing application to $INSTALL_DIR..."
     # Remove old version if exists
     rm -rf "$INSTALL_DIR/$APP_NAME"
-    cp -R "./dist/$APP_NAME" "$INSTALL_DIR/"
+    cp -R "$SCRIPT_DIR/$APP_NAME" "$INSTALL_DIR/"
     echo "✓ Application installed"
 else
-    echo "Error: Application bundle not found. Please build the application first with: pyinstaller build_config.spec"
+    echo "Error: Application bundle not found at $SCRIPT_DIR/$APP_NAME"
+    echo "Please build the application first with: ./build.sh"
     exit 1
 fi
 
