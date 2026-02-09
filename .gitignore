@@ -43,10 +43,6 @@ Thumbs.db
 # Logs
 *.log
 
-# Icon creation artifacts
-assets/icon_*.png
-assets/create_icon.py
-
 # Claude Code user preferences
 .claude/*
 !.claude/skills/

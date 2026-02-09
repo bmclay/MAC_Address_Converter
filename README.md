@@ -52,7 +52,7 @@ chmod +x install.sh
 ./install.sh
 ```
 
-The installer copies the binary to `~/.local/bin/`, installs the application icon, creates a `.desktop` file, and sets up a systemd user service for auto-start.
+The installer copies the binary to `~/.local/bin/` and sets up a systemd user service for auto-start.
 
 **Windows:**
 
@@ -111,7 +111,7 @@ pip install pyinstaller
 .\build.ps1 -Pack    # Build and create release zip
 ```
 
-The build scripts run PyInstaller, assemble the distribution package (executable + install/uninstall scripts + assets) in `dist/<os>/`, and optionally create a release archive.
+The build scripts run PyInstaller, assemble the distribution package (executable + install/uninstall scripts) in `dist/<os>/`, and optionally create a release archive.
 
 See [docs/BUILD_INSTRUCTIONS.md](docs/BUILD_INSTRUCTIONS.md) for manual build steps and platform-specific notes. See [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) for advanced distribution options.
 
@@ -204,9 +204,6 @@ MAC_Address_Converter/
   build_config.spec          # PyInstaller build configuration
   build.sh                   # Build script (Linux/macOS)
   build.ps1                  # Build script (Windows)
-  assets/
-    icon.png                 # Application icon (PNG)
-    icon.ico                 # Application icon (Windows ICO)
   scripts/
     linux/
       install.sh             # Linux installer
@@ -216,6 +213,7 @@ MAC_Address_Converter/
       uninstall.ps1          # Windows uninstaller
     mac/
       install_macos.sh       # macOS installer
+      uninstall_macos.sh     # macOS uninstaller
   docs/
     BUILD_INSTRUCTIONS.md    # Detailed build guide
     DISTRIBUTION.md          # Distribution options

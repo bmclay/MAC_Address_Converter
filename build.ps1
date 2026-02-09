@@ -30,9 +30,6 @@ if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed" }
 Write-Host "Assembling distribution package..." -ForegroundColor Yellow
 Copy-Item "$ProjectDir\scripts\windows\install.ps1" -Destination $OSDir
 Copy-Item "$ProjectDir\scripts\windows\uninstall.ps1" -Destination $OSDir
-if (Test-Path "$ProjectDir\assets\icon.ico") {
-    Copy-Item "$ProjectDir\assets\icon.ico" -Destination $OSDir
-}
 
 if ($Pack) {
     Write-Host "Creating release archive..." -ForegroundColor Yellow

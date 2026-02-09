@@ -1,4 +1,4 @@
-﻿# Installation script for MAC Address Converter (Windows)
+# Installation script for MAC Address Converter (Windows)
 # Run with: powershell -ExecutionPolicy Bypass -File install.ps1
 
 $ErrorActionPreference = "Stop"
@@ -20,14 +20,14 @@ Write-Host ""
 Write-Host "Stopping any running instances..." -ForegroundColor Yellow
 Get-Process -Name "mac-address-converter" -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 1
-Write-Host "✓ Done" -ForegroundColor Green
+Write-Host "  Done" -ForegroundColor Green
 
 # Remove legacy startup batch file if present
 $LegacyBat = Join-Path -Path $StartupDir -ChildPath 'start_mac_address_converter.bat'
 if (Test-Path $LegacyBat) {
     Write-Host "Removing legacy startup script..." -ForegroundColor Yellow
     Remove-Item $LegacyBat -Force
-    Write-Host "✓ Legacy startup script removed" -ForegroundColor Green
+    Write-Host "  Legacy startup script removed" -ForegroundColor Green
 }
 
 # Create installation directory
@@ -39,7 +39,7 @@ $ExePath = Join-Path -Path $ScriptDir -ChildPath $AppName
 if (Test-Path $ExePath) {
     Write-Host "Installing executable to $InstallDir..." -ForegroundColor Yellow
     Copy-Item $ExePath -Destination $InstallDir -Force
-    Write-Host "✓ Executable installed" -ForegroundColor Green
+    Write-Host "  Executable installed" -ForegroundColor Green
 } else {
     Write-Host "Error: Executable not found at $ExePath" -ForegroundColor Red
     Write-Host "Please build the application first with: .\build.ps1" -ForegroundColor Red
@@ -54,7 +54,7 @@ $Shortcut.TargetPath = (Join-Path -Path $InstallDir -ChildPath $AppName)
 $Shortcut.WorkingDirectory = $InstallDir
 $Shortcut.Description = "MAC Address Converter - Auto-format MAC addresses"
 $Shortcut.Save()
-Write-Host "✓ Startup shortcut created" -ForegroundColor Green
+Write-Host "  Startup shortcut created" -ForegroundColor Green
 
 # Start the application
 Write-Host ""
@@ -69,7 +69,4 @@ Write-Host ""
 Write-Host "The MAC Address Converter is now running and will start automatically on login." -ForegroundColor Green
 Write-Host ""
 Write-Host "Installation location: $InstallDir" -ForegroundColor White
-Write-Host "To uninstall:" -ForegroundColor White
-Write-Host "  1. Delete: $InstallDir" -ForegroundColor White
-Write-Host "  2. Delete: $ShortcutPath" -ForegroundColor White
 Write-Host ""

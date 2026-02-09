@@ -2,7 +2,6 @@
 # Build with: pyinstaller build_config.spec
 
 import sys
-from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
@@ -10,7 +9,7 @@ a = Analysis(
     ['mac_address_converter.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets/icon.png', '.')],  # Include icon in the build
+    datas=[],
     hiddenimports=['tkinter'],
     hookspath=[],
     hooksconfig={},
@@ -44,7 +43,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='assets/icon.ico',  # Windows icon
 )
 
 # macOS-specific app bundle
@@ -52,7 +50,6 @@ if sys.platform == 'darwin':
     app = BUNDLE(
         exe,
         name='MAC Address Converter.app',
-        icon='assets/icon.icns',  # macOS icon (create with: iconutil -c icns icon.iconset)
         bundle_identifier='com.macaddressconverter.app',
         info_plist={
             'NSPrincipalClass': 'NSApplication',

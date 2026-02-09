@@ -24,15 +24,26 @@ if [ -d "$SCRIPT_DIR/$APP_NAME" ]; then
     # Remove old version if exists
     rm -rf "$INSTALL_DIR/$APP_NAME"
     cp -R "$SCRIPT_DIR/$APP_NAME" "$INSTALL_DIR/"
-    echo "✓ Application installed"
+    echo "  Application installed"
+elif [ -f "$SCRIPT_DIR/mac-address-converter" ]; then
+    # Fallback: standalone binary without app bundle
+    echo "Installing executable to $INSTALL_DIR..."
+    mkdir -p "$INSTALL_DIR"
+    cp "$SCRIPT_DIR/mac-address-converter" "$INSTALL_DIR/"
+    chmod +x "$INSTALL_DIR/mac-address-converter"
+    echo "  Executable installed"
 else
-    echo "Error: Application bundle not found at $SCRIPT_DIR/$APP_NAME"
+    echo "Error: Application not found in $SCRIPT_DIR"
     echo "Please build the application first with: ./build.sh"
     exit 1
 fi
 
-# Get the executable path within the app bundle
-EXEC_PATH="$INSTALL_DIR/$APP_NAME/Contents/MacOS/mac-address-converter"
+# Get the executable path
+if [ -d "$INSTALL_DIR/$APP_NAME" ]; then
+    EXEC_PATH="$INSTALL_DIR/$APP_NAME/Contents/MacOS/mac-address-converter"
+else
+    EXEC_PATH="$INSTALL_DIR/mac-address-converter"
+fi
 
 # Create launch agent directory
 mkdir -p "$LAUNCH_AGENTS_DIR"
@@ -62,13 +73,13 @@ cat > "$LAUNCH_AGENTS_DIR/$PLIST_NAME" << EOF
 </plist>
 EOF
 
-echo "✓ Launch agent created"
+echo "  Launch agent created"
 
 # Load the launch agent
 echo "Loading launch agent..."
 launchctl unload "$LAUNCH_AGENTS_DIR/$PLIST_NAME" 2>/dev/null || true
 launchctl load "$LAUNCH_AGENTS_DIR/$PLIST_NAME"
-echo "✓ Launch agent loaded"
+echo "  Launch agent loaded"
 
 echo ""
 echo "======================================"
@@ -81,9 +92,4 @@ echo "Useful commands:"
 echo "  Stop:     launchctl unload $LAUNCH_AGENTS_DIR/$PLIST_NAME"
 echo "  Start:    launchctl load $LAUNCH_AGENTS_DIR/$PLIST_NAME"
 echo "  Logs:     tail -f ~/Library/Logs/mac-address-converter.log"
-echo ""
-echo "To uninstall:"
-echo "  1. launchctl unload $LAUNCH_AGENTS_DIR/$PLIST_NAME"
-echo "  2. rm $LAUNCH_AGENTS_DIR/$PLIST_NAME"
-echo "  3. rm -rf '$INSTALL_DIR/$APP_NAME'"
 echo ""

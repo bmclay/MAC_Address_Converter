@@ -48,9 +48,6 @@ case "$OS" in
     linux)
         cp "$PROJECT_DIR/scripts/linux/install.sh" "$DIST_DIR/$OS/"
         cp "$PROJECT_DIR/scripts/linux/uninstall.sh" "$DIST_DIR/$OS/"
-        cp "$PROJECT_DIR/assets/icon.png" "$DIST_DIR/$OS/"
-        cp "$PROJECT_DIR/mac-address-converter.desktop" "$DIST_DIR/$OS/"
-        cp "$PROJECT_DIR/dist/linux/README.md" "$DIST_DIR/$OS/README.md" 2>/dev/null || true
         chmod +x "$DIST_DIR/$OS/install.sh" "$DIST_DIR/$OS/uninstall.sh"
         chmod +x "$DIST_DIR/$OS/mac-address-converter"
 
@@ -63,7 +60,6 @@ case "$OS" in
     windows)
         cp "$PROJECT_DIR/scripts/windows/install.ps1" "$DIST_DIR/$OS/"
         cp "$PROJECT_DIR/scripts/windows/uninstall.ps1" "$DIST_DIR/$OS/"
-        cp "$PROJECT_DIR/assets/icon.ico" "$DIST_DIR/$OS/" 2>/dev/null || true
 
         if [ "$PACK" = true ]; then
             echo "Creating release archive..."
@@ -73,7 +69,8 @@ case "$OS" in
         ;;
     mac)
         cp "$PROJECT_DIR/scripts/mac/install_macos.sh" "$DIST_DIR/$OS/"
-        chmod +x "$DIST_DIR/$OS/install_macos.sh"
+        cp "$PROJECT_DIR/scripts/mac/uninstall_macos.sh" "$DIST_DIR/$OS/"
+        chmod +x "$DIST_DIR/$OS/install_macos.sh" "$DIST_DIR/$OS/uninstall_macos.sh"
 
         if [ "$PACK" = true ]; then
             echo "Creating release archive..."

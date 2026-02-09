@@ -4,10 +4,8 @@
 # sample mac address: AA:BB:CC:DD:EE:FF
 
 import tkinter as tk
-from tkinter import font as tkfont
 import re
 import sys
-import os
 import platform
 
 # Modern color scheme - sleek dark theme
@@ -31,7 +29,7 @@ TOAST = {
     "taskbar_margin": 10,
     "slide_step_px": 8,
     "slide_interval_ms": 10,
-    "auto_dismiss_ms": 5000,
+    "auto_dismiss_ms": 10000,
 }
 
 # Platform detection
@@ -326,16 +324,6 @@ def check_clipboard():
 
 window = tk.Tk()
 
-# Set WM_CLASS for Linux desktop environment icon matching
-try:
-    window.tk.call("tk", "appname", "mac-address-converter")
-    try:
-        window.tk.call("wm", "class", window._w, "MacAddressConverter")
-    except Exception:
-        pass
-except Exception as e:
-    print(f"Could not set application name: {e}", file=sys.stderr)
-
 window.title("MAC Address Converter")
 window.overrideredirect(True)
 window.resizable(False, False)
@@ -348,23 +336,6 @@ if _os == "Linux":
         window.attributes("-type", "notification")
     except tk.TclError:
         pass
-
-# Set application icon
-try:
-    if getattr(sys, "frozen", False):
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.dirname(os.path.abspath(__file__))
-
-    icon_path = os.path.join(base_path, "assets", "icon.png")
-    if getattr(sys, "frozen", False):
-        icon_path = os.path.join(base_path, "icon.png")
-
-    if os.path.exists(icon_path):
-        icon = tk.PhotoImage(file=icon_path)
-        window.iconphoto(True, icon)
-except Exception as e:
-    print(f"Could not load icon: {e}", file=sys.stderr)
 
 
 # --- Toast layout ---
@@ -466,7 +437,7 @@ convert_case_button = tk.Button(
     cursor="hand2",
     relief=tk.FLAT,
 )
-convert_case_button.pack(fill=tk.X, padx=20)
+convert_case_button.pack(fill=tk.X)
 
 
 def on_convert_enter(e):
