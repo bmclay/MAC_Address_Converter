@@ -4,15 +4,33 @@ This guide explains how to build distributable packages for MAC Address Converte
 
 ## Prerequisites
 
-Ensure you have Python 3.7+ and the required dependencies:
+Ensure you have Python 3.7+ and PyInstaller:
 
 ```bash
-pip install pyinstaller pyperclip
+pip install pyinstaller
 ```
 
 ## Building Executables
 
-### For All Platforms
+### Using the Build Scripts (Recommended)
+
+**Linux / macOS:**
+
+```bash
+./build.sh          # Build only
+./build.sh --pack   # Build and create release archive
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\build.ps1          # Build only
+.\build.ps1 -Pack    # Build and create release zip
+```
+
+The build scripts handle PyInstaller, assembling the dist package with install/uninstall scripts, and creating release archives.
+
+### Manual Build
 
 Build the executable for your current platform:
 

@@ -44,8 +44,9 @@ Thumbs.db
 *.log
 
 # Icon creation artifacts
-icon_*.png
-create_icon.py
+assets/icon_*.png
+assets/create_icon.py
 
 # Claude Code user preferences
-.claude/
+.claude/*
+!.claude/skills/

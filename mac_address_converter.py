@@ -204,7 +204,10 @@ try:
         # Running as script
         base_path = os.path.dirname(os.path.abspath(__file__))
 
-    icon_path = os.path.join(base_path, "icon.png")
+    icon_path = os.path.join(base_path, "assets", "icon.png")
+    if getattr(sys, "frozen", False):
+        # PyInstaller bundles assets to root of _MEIPASS
+        icon_path = os.path.join(base_path, "icon.png")
 
     if os.path.exists(icon_path):
         icon = tk.PhotoImage(file=icon_path)

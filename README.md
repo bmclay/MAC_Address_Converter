@@ -2,11 +2,11 @@
 
 > 🚀 A cross-platform utility that automatically detects copied MAC addresses and provides instant formatting options.
 
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-blue)](https://github.com/yourusername/MAC_Address_Converter)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-blue)](https://github.com/bmclay/MAC_Address_Converter)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.7+-yellow)](https://www.python.org/)
 
-![MAC Address Converter Screenshot](./mac_address_converter.png)
+![MAC Address Converter Screenshot](assets/mac_address_converter.png)
 
 ## ✨ Features
 
@@ -81,38 +81,25 @@ chmod +x install_macos.sh
 
 ### Building & Distributing
 
-To create the distribution packages for your users, you must build on each target platform (PyInstaller cannot cross-compile).
+Build on each target platform (PyInstaller cannot cross-compile). Build scripts handle everything automatically.
 
-1. **Install build dependencies:**
+**Linux / macOS (bash):**
 
-   ```bash
-   pip install pyinstaller pyperclip
-   ```
+```bash
+pip install pyinstaller
+./build.sh --pack
+```
 
-2. **Build the executable:**
+**Windows (PowerShell):**
 
-   ```bash
-   pyinstaller build_config.spec
-   ```
+```powershell
+pip install pyinstaller
+.\build.ps1 -Pack
+```
 
-3. **Create the distribution ZIP:**
+This builds the executable, assembles the distribution package in `dist/<os>/`, and creates a release archive.
 
-   **Windows (PowerShell):**
-
-   ```powershell
-   Compress-Archive -Path dist\, install.ps1, uninstall.ps1, docs\QUICK_START.md -DestinationPath mac-address-converter-windows.zip
-   ```
-
-   **Linux / macOS:**
-
-   ```bash
-   zip -r mac-address-converter-linux.zip dist/ install.sh uninstall.sh docs/QUICK_START.md
-   zip -r mac-address-converter-macos.zip dist/ install_macos.sh docs/QUICK_START.md
-   ```
-
-4. **Share the ZIP** with your users (email, file share, GitHub Releases, etc.)
-
-See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) and [DISTRIBUTION.md](DISTRIBUTION.md) for more options.
+See [docs/BUILD_INSTRUCTIONS.md](docs/BUILD_INSTRUCTIONS.md) and [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) for more options.
 
 ### For Developers
 
@@ -121,7 +108,7 @@ If you want to run from source:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/MAC_Address_Converter.git
+   git clone https://github.com/bmclay/MAC_Address_Converter.git
    cd MAC_Address_Converter
    ```
 
@@ -214,10 +201,8 @@ uninstall.ps1
 
 ## 📚 Documentation
 
-- **[QUICK_START.md](QUICK_START.md)** - Quick installation guide for users and developers
-- **[BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)** - How to build executables for distribution
-- **[DISTRIBUTION.md](DISTRIBUTION.md)** - Advanced distribution options (CI/CD, package managers, professional installers)
-- **[README_DISTRIBUTION.md](README_DISTRIBUTION.md)** - Complete distribution overview
+- **[docs/BUILD_INSTRUCTIONS.md](docs/BUILD_INSTRUCTIONS.md)** - How to build executables for distribution
+- **[docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)** - Advanced distribution options (CI/CD, package managers, professional installers)
 
 ## 🛣️ Roadmap
 
@@ -281,7 +266,7 @@ Right-click the app and select "Open" instead of double-clicking. This is a Gate
 
 ## 📧 Support
 
-Having issues? Please [open an issue](https://github.com/yourusername/MAC_Address_Converter/issues) on GitHub.
+Having issues? Please [open an issue](https://github.com/bmclay/MAC_Address_Converter/issues) on GitHub.
 
 ---
 
@@ -289,6 +274,6 @@ Having issues? Please [open an issue](https://github.com/yourusername/MAC_Addres
 
 **Made with ❤️ for network engineers everywhere**
 
-[Report Bug](https://github.com/yourusername/MAC_Address_Converter/issues) · [Request Feature](https://github.com/yourusername/MAC_Address_Converter/issues)
+[Report Bug](https://github.com/bmclay/MAC_Address_Converter/issues) · [Request Feature](https://github.com/bmclay/MAC_Address_Converter/issues)
 
 </div>
